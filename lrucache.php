@@ -64,9 +64,6 @@ class LRUCache
             $lruNode = $this->tail->prev;
             $this->removeNode($lruNode);
             unset($this->map[$lruNode->key]);
-            // Help garbage collection
-            $lruNode->prev = null;
-            $lruNode->next = null;
         }
 
         $newNode = new Node($key, $value);
@@ -76,12 +73,17 @@ class LRUCache
 
     private function removeNode(Node $node): void 
     {
-        $prev = $node->prev;
-        $next = $node->next;
-        $prev->next = $next;
-        $next->prev = $prev;
+        if ($node->prev === null || $node->next === null) {
+            return;
+        }
+
+        if ($node === $this->head || $node === $this->tail) {
+            throw new RuntimeException("Cannot remove sentinel nodes");
+        }
+
+        $node->prev->next = $node->next;
+        $node->next->prev = $node->prev;
         
-        // Clean up references to help with garbage collection
         $node->prev = null;
         $node->next = null;
     }
