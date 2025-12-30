@@ -73,10 +73,6 @@ class LRUCache
 
     private function removeNode(Node $node): void 
     {
-        if ($node->prev === null || $node->next === null) {
-            return;
-        }
-
         if ($node === $this->head || $node === $this->tail) {
             throw new RuntimeException("Cannot remove sentinel nodes");
         }
