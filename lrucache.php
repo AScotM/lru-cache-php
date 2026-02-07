@@ -62,8 +62,9 @@ class LRUCache
 
         if (count($this->map) >= $this->capacity) {
             $lruNode = $this->tail->prev;
+            $lruKey = $lruNode->key;
             $this->removeNode($lruNode);
-            unset($this->map[$lruNode->key]);
+            unset($this->map[$lruKey]);
         }
 
         $newNode = new Node($key, $value);
@@ -79,9 +80,6 @@ class LRUCache
 
         $node->prev->next = $node->next;
         $node->next->prev = $node->prev;
-        
-        $node->prev = null;
-        $node->next = null;
     }
 
     private function addToFront(Node $node): void 
@@ -90,6 +88,21 @@ class LRUCache
         $node->prev = $this->head;
         $this->head->next->prev = $node;
         $this->head->next = $node;
+    }
+
+    public function has(int $key): bool
+    {
+        return isset($this->map[$key]);
+    }
+
+    public function stats(): array
+    {
+        return [
+            'capacity' => $this->capacity,
+            'size' => count($this->map),
+            'is_empty' => empty($this->map),
+            'remaining' => $this->capacity - count($this->map)
+        ];
     }
 
     public function dump(): array 
@@ -136,5 +149,24 @@ echo "Put(4, 4) - Cache: " . json_encode($cache->dump()) . "\n";
 echo "Get(1): " . $cache->get(1) . "\n";
 echo "Get(3): " . $cache->get(3) . "\n";
 echo "Get(4): " . $cache->get(4) . "\n";
+
+echo "\n=== Additional Tests ===\n";
+
+$stats = $cache->stats();
+echo "Cache Stats: " . json_encode($stats) . "\n";
+
+echo "Has key 1: " . ($cache->has(1) ? 'true' : 'false') . "\n";
+echo "Has key 2: " . ($cache->has(2) ? 'true' : 'false') . "\n";
+echo "Has key 3: " . ($cache->has(3) ? 'true' : 'false') . "\n";
+echo "Has key 4: " . ($cache->has(4) ? 'true' : 'false') . "\n";
+
+echo "\nTesting capacity constraints...\n";
+$cache2 = new LRUCache(3);
+$cache2->put(1, 100);
+$cache2->put(2, 200);
+$cache2->put(3, 300);
+echo "After adding 3 items to capacity 3: " . json_encode($cache2->dump()) . "\n";
+$cache2->put(4, 400);
+echo "After adding 4th item (should evict LRU): " . json_encode($cache2->dump()) . "\n";
 
 echo "\n=== Demo Complete ===\n";
