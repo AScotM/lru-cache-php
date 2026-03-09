@@ -95,6 +95,13 @@ class LRUCache
         return isset($this->map[$key]);
     }
 
+    public function clear(): void
+    {
+        $this->map = [];
+        $this->head->next = $this->tail;
+        $this->tail->prev = $this->head;
+    }
+
     public function stats(): array
     {
         return [
@@ -168,5 +175,9 @@ $cache2->put(3, 300);
 echo "After adding 3 items to capacity 3: " . json_encode($cache2->dump()) . "\n";
 $cache2->put(4, 400);
 echo "After adding 4th item (should evict LRU): " . json_encode($cache2->dump()) . "\n";
+
+echo "\nTesting clear method...\n";
+$cache2->clear();
+echo "After clear: " . json_encode($cache2->dump()) . "\n";
 
 echo "\n=== Demo Complete ===\n";
